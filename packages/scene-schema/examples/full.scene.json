@@ -196,6 +196,13 @@
       "match": {
         "names": ["CurtainWall_Glass", "CurtainWall_Glass_A"]
       },
+      "pbr": {
+        "transmission": 1,
+        "thickness": 0.01,
+        "dispersion": 0.05,
+        "attenuationColor": "#d8e8f0",
+        "attenuationDistance": 0.5
+      },
       "glass": {
         "type": "layer-weight",
         "layers": [

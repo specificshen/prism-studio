@@ -55,6 +55,14 @@ export const proceduralSkyEnvironmentSchema = z.strictObject({
   sunAzimuthDeg: z.number({ error: 'sunAzimuthDeg 应为数字（度）' }),
   /** 大气浑浊度，越大越偏黄/灰 */
   turbidity: z.number().optional(),
+  /**
+   * 天空光照（IBL）强度倍率：天穹烘焙成 scene.environment 后
+   * 乘以此值；缺省 1（v1.1 新增，向后兼容）
+   */
+  lightingStrength: z
+    .number({ error: 'procedural-sky 环境 lightingStrength 应为数字' })
+    .min(0, { error: 'lightingStrength 不能为负数' })
+    .default(1),
   fog: fogSchema.optional(),
 });
 

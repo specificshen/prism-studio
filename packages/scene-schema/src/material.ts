@@ -39,6 +39,20 @@ export const pbrOverrideSchema = z.strictObject({
     .optional(),
   /** 体积厚度（米），配合 transmission 使用 */
   thickness: z.number().min(0, { error: 'thickness 不能为负数' }).optional(),
+  /**
+   * 色散强度（≥0），对应 material.dispersion（r167+）；
+   * 仅在 transmission > 0 时可见（v1.1 新增，向后兼容）
+   */
+  dispersion: z.number().min(0, { error: 'dispersion 不能为负数' }).optional(),
+  /** 体积衰减色（Beer 定律），配合 transmission/thickness 使用（v1.1 新增） */
+  attenuationColor: colorSchema.optional(),
+  /**
+   * 体积衰减距离（米，>0），对应 material.attenuationDistance（v1.1 新增）
+   */
+  attenuationDistance: z
+    .number()
+    .positive({ error: 'attenuationDistance 应大于 0（米）' })
+    .optional(),
   /** 清漆强度 0~1 */
   clearcoat: z
     .number()

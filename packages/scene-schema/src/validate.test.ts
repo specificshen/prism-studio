@@ -123,6 +123,99 @@ describe('validateScenePackage：结构校验', () => {
   });
 });
 
+describe('validateScenePackage：v1.1 新增字段（向后兼容）', () => {
+  it('procedural-sky 缺省 lightingStrength 补默认值 1', () => {
+    const pkg = loadExample('minimal.scene.json');
+    pkg.environment = {
+      type: 'procedural-sky',
+      sunElevationDeg: 35,
+      sunAzimuthDeg: 120,
+    };
+    const result = validateScenePackage(pkg);
+    expect(result.ok).toBe(true);
+    expect(result.data?.environment).toMatchObject({ lightingStrength: 1 });
+  });
+
+  it('procedural-sky lightingStrength 合法值（含 0）通过', () => {
+    const pkg = loadExample('minimal.scene.json');
+    pkg.environment = {
+      type: 'procedural-sky',
+      sunElevationDeg: 35,
+      sunAzimuthDeg: 120,
+      lightingStrength: 0,
+    };
+    const result = validateScenePackage(pkg);
+    expect(result.ok).toBe(true);
+    expect(result.data?.environment).toMatchObject({ lightingStrength: 0 });
+  });
+
+  it('procedural-sky lightingStrength 为负数报错', () => {
+    const pkg = loadExample('minimal.scene.json');
+    pkg.environment = {
+      type: 'procedural-sky',
+      sunElevationDeg: 35,
+      sunAzimuthDeg: 120,
+      lightingStrength: -0.5,
+    };
+    const result = validateScenePackage(pkg);
+    expect(result.ok).toBe(false);
+    const issue = result.issues.find(
+      (item) => item.path === 'environment.lightingStrength',
+    );
+    expect(issue?.severity).toBe('error');
+  });
+
+  it('pbr.dispersion / attenuationColor / attenuationDistance 合法值通过', () => {
+    const pkg = loadExample('minimal.scene.json');
+    pkg.materials[0].pbr = {
+      transmission: 1,
+      thickness: 0.01,
+      dispersion: 0.05,
+      attenuationColor: '#d8e8f0',
+      attenuationDistance: 0.5,
+    };
+    const result = validateScenePackage(pkg);
+    expect(result.issues).toEqual([]);
+    expect(result.ok).toBe(true);
+  });
+
+  it('pbr.dispersion 为负数报错', () => {
+    const pkg = loadExample('minimal.scene.json');
+    pkg.materials[0].pbr = { dispersion: -0.1 };
+    const result = validateScenePackage(pkg);
+    expect(result.ok).toBe(false);
+    const issue = result.issues.find(
+      (item) => item.path === 'materials.0.pbr.dispersion',
+    );
+    expect(issue?.severity).toBe('error');
+  });
+
+  it('pbr.attenuationColor 非 #rrggbb 报错', () => {
+    const pkg = loadExample('minimal.scene.json');
+    pkg.materials[0].pbr = { attenuationColor: 'red' };
+    const result = validateScenePackage(pkg);
+    expect(result.ok).toBe(false);
+    const issue = result.issues.find(
+      (item) => item.path === 'materials.0.pbr.attenuationColor',
+    );
+    expect(issue?.severity).toBe('error');
+    expect(issue?.message).toContain('#rrggbb');
+  });
+
+  it('pbr.attenuationDistance 为 0 或负数报错', () => {
+    for (const value of [0, -1]) {
+      const pkg = loadExample('minimal.scene.json');
+      pkg.materials[0].pbr = { attenuationDistance: value };
+      const result = validateScenePackage(pkg);
+      expect(result.ok).toBe(false);
+      const issue = result.issues.find(
+        (item) => item.path === 'materials.0.pbr.attenuationDistance',
+      );
+      expect(issue?.severity).toBe('error');
+    }
+  });
+});
+
 describe('validateScenePackage：语义规则', () => {
   it('id 重复报 error 并指出两处位置', () => {
     const pkg = loadExample('minimal.scene.json');

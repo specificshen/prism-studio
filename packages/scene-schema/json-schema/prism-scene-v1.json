@@ -382,6 +382,11 @@
             "turbidity": {
               "type": "number"
             },
+            "lightingStrength": {
+              "default": 1,
+              "type": "number",
+              "minimum": 0
+            },
             "fog": {
               "type": "object",
               "properties": {
@@ -713,6 +718,18 @@
               "thickness": {
                 "type": "number",
                 "minimum": 0
+              },
+              "dispersion": {
+                "type": "number",
+                "minimum": 0
+              },
+              "attenuationColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-f]{6}$"
+              },
+              "attenuationDistance": {
+                "type": "number",
+                "exclusiveMinimum": 0
               },
               "clearcoat": {
                 "type": "number",

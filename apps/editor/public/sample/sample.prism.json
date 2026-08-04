@@ -4,7 +4,7 @@
   "meta": {
     "name": "prism-sample",
     "exporterVersion": "make-sample-scene 1.0.0",
-    "exportedAt": "2026-08-03T08:31:40.429Z"
+    "exportedAt": "2026-08-04T02:17:44.107Z"
   },
   "coordinateSystem": "blender",
   "units": "metric",
@@ -29,7 +29,8 @@
     "type": "procedural-sky",
     "sunElevationDeg": 45,
     "sunAzimuthDeg": 135,
-    "turbidity": 4
+    "turbidity": 4,
+    "lightingStrength": 0.45
   },
   "post": {
     "bloom": {

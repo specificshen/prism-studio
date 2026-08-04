@@ -360,6 +360,43 @@ def extract_emissive(node: Any) -> dict[str, Any] | None:
     return {"color": hex_color(color), "strength": round5(strength)}
 
 
+def extract_attenuation(node_tree: Any, material_name: str, warnings: list[str]) -> dict[str, Any]:
+    """材质输出 Volume 输入挂了 Volume Absorption → pbr 体积衰减字段（v1.1）。
+
+    对应 KHR_materials_volume 口径：attenuationColor 取节点 Color（线性 →
+    '#rrggbb'）；attenuationDistance = 1 / density（米）。density ≤ 0 或被
+    节点驱动时跳过并登记警告，不硬编兜底值。
+    """
+    for node in node_tree.nodes:
+        if node.type != "OUTPUT_MATERIAL":
+            continue
+        volume_socket = node.inputs.get("Volume")
+        if volume_socket is None or not volume_socket.is_linked:
+            continue
+        volume_node = volume_socket.links[0].from_node
+        if volume_node.type != "VOLUME_ABSORPTION":
+            continue
+        density = node_socket_constant(volume_node, "Density")
+        if density is None:
+            warnings.append(
+                f"材质 `{material_name}` 的 Volume Absorption 密度被节点驱动："
+                "无法换算 attenuationDistance，请改为常量或在编辑器侧配置"
+            )
+            return {}
+        if float(density) <= 0.0:
+            warnings.append(
+                f"材质 `{material_name}` 的 Volume Absorption 密度 ≤ 0："
+                "跳过 attenuation 导出（attenuationDistance = 1/density 无意义）"
+            )
+            return {}
+        pbr: dict[str, Any] = {"attenuationDistance": round5(1.0 / float(density))}
+        color = node_socket_constant(volume_node, "Color")
+        if color is not None:
+            pbr["attenuationColor"] = hex_color(color)
+        return pbr
+    return {}
+
+
 def detect_layer_weight_glass(node_tree: Any) -> dict[str, Any] | None:
     """识别 Layer Weight 驱动的多层玻璃节点图（Glass BSDF 混合等）。
 
@@ -401,6 +438,10 @@ def export_material(material: Any, registry: IdRegistry, warnings: list[str]) ->
         emissive = extract_emissive(principled)
         if emissive is not None:
             entry["emissive"] = emissive
+
+    attenuation = extract_attenuation(tree, material.name, warnings)
+    if attenuation:
+        entry.setdefault("pbr", {}).update(attenuation)
 
     glass = detect_layer_weight_glass(tree)
     if glass is not None:

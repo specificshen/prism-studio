@@ -75,3 +75,17 @@ glTF 是 PBR 材质交换格式，不是 Cycles 节点图格式。Cycles 节点�
 导出器会识别"Layer Weight + Glass BSDF 混合"的节点图，在材质条目里写入
 `glass: {"type": "layer-weight", "layers": N}`，前端按 layer-weight 模型复建。
 普通 Principled 玻璃请直接用 `Transmission Weight`，glTF 原生支持。
+
+### 体积衰减（Volume Absorption → attenuation）
+
+材质的输出节点 **Volume（体积）** 输入挂了 **Volume Absorption** 节点时，
+导出器会写入 `pbr.attenuationColor`（节点 Color，线性 → `#rrggbb`）与
+`pbr.attenuationDistance`（= 1 / Density，米）。Density ≤ 0 或被节点驱动时
+跳过并给出警告，不硬编兜底值。
+
+### 没有 Blender 来源的字段
+
+v1.1 新增的 `pbr.dispersion`、`environment.lightingStrength` 等字段在
+Blender 里没有对应数据来源，导出器**不硬编**——这三项（dispersion、
+lightingStrength，以及需要超出 Volume Absorption 节点表达的 attenuation
+微调）需交付后在编辑器面板或 `.prism.json` 侧配置。

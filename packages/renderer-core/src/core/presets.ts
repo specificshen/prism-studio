@@ -67,6 +67,23 @@ export const EDITOR_DEFAULTS = {
      * 需远大于场景包围盒且小于相机 far，属几何占位尺度而非视觉效果参数
      */
     skyDomeScale: 10000,
+    /**
+     * procedural-sky 天空 IBL 烘焙参数（PMREMGenerator.fromScene 兜底）：
+     * 影响烘焙产物的分辨率/模糊度而非"效果风格"，故属编辑器兜底预设
+     */
+    skyIbl: {
+      /** CubeUV 贴图边长（像素）：three fromScene 默认口径，天空为低频内容无需更高 */
+      size: 256,
+      /** 预模糊半径（弧度）：0 = 不模糊；太阳盘已隐藏，天空本身平滑无需去走样模糊 */
+      sigma: 0,
+      /**
+       * 烘焙相机近裁剪面（米）：fromScene 默认 0.1；
+       * 烘焙用天穹不缩放（盒面距相机 0.5 米），只需覆盖它
+       */
+      near: 0.1,
+      /** 烘焙相机远裁剪面（米）：fromScene 默认 100，同理只需覆盖 0.5 米的烘焙天穹 */
+      far: 100,
+    },
   },
 
   /** 后期管线硬限制 */

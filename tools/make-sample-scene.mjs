@@ -471,6 +471,8 @@ function buildSceneJson() {
       sunElevationDeg: 45,
       sunAzimuthDeg: 135,
       turbidity: 4,
+      // IBL 强度：物理天空做环境光很亮，0.45 是示例场景的均衡值（数据调参，不改代码）
+      lightingStrength: 0.45,
     },
     post: {
       bloom: { enabled: true, threshold: 1, strength: 0.25, radius: 0.6 },

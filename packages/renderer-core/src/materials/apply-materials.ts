@@ -1,22 +1,17 @@
-import type {
-  GlassOverride,
-  PbrOverride,
-  SceneMaterial,
-} from '@prism/scene-schema';
-import { float, mix, normalView, positionViewDirection, vec3 } from 'three/tsl';
+import type { PbrOverride, SceneMaterial } from '@prism/scene-schema';
 import {
-  Color,
   type Material,
   Mesh,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
-  type Node,
   type Object3D,
 } from 'three/webgpu';
+import { installGlass } from './tsl/registry.ts';
 
 /**
  * 材质覆盖：只按 match.names 精确匹配 GLB 材质名。
  * 铁律：禁止任何 name.includes / 正则 / 关键词启发式（AGENTS.md grep 自检）。
+ * 自定义 TSL 材质（玻璃等）的 installer 在 ./tsl/ 下按类型注册分发。
  */
 
 /** 单个材质覆盖条目的命中报告（0 个或多个 names 都要报告） */
@@ -35,16 +30,6 @@ export interface ApplyMaterialsResult {
   warnings: string[];
   entries: MaterialMatchReport[];
 }
-
-/**
- * GLB 经典材质在 WebGPU 下由 StandardNodeLibrary.fromMaterial 转换为
- * MeshPhysicalNodeMaterial，转换会拷贝材质自有属性——提前挂在经典材质上的
- * colorNode / iorNode 会被一并带过去（three r184 验证过的机制）。
- */
-type PhysicalNodeCarrier = MeshPhysicalMaterial & {
-  colorNode?: Node | null;
-  iorNode?: Node | null;
-};
 
 /**
  * 材质名 → 引用槽位索引（只索引，不改动材质）。
@@ -87,7 +72,7 @@ function indexMaterialsByName(root: Object3D): Map<string, MaterialSlot[]> {
 /**
  * 把槽位上的材质升级为 MeshPhysicalMaterial（契约覆盖需要物理材质口径）。
  * 直接 physical.copy(standardMaterial) 会访问源材质没有的物理专属字段而抛错
- * （r184 实测），故借用 MeshStandardMaterial.copy 只拷贝标准字段，
+ * （r185 实测），故借用 MeshStandardMaterial.copy 只拷贝标准字段，
  * 物理字段保持默认值。同一源材质只升级一次并共享。
  */
 function ensurePhysicalMaterial(
@@ -162,11 +147,14 @@ export function applyMaterials(
     }
 
     for (const material of matched) {
+      // 顺序固定：先 pbr 后 glass。玻璃 installer 写节点槽位（colorNode/iorNode），
+      // 其法向入射标定以 pbr 覆盖后的 material.color 为基准；且节点槽位在
+      // MeshPhysicalNodeMaterial 里优先于 pbr 写的经典标量槽——两者不互相覆盖。
       if (entry.pbr) {
         applyPbrOverride(material, entry.pbr);
       }
       if (entry.glass) {
-        installLayerWeightGlass(material, entry.glass);
+        installGlass(material, entry.glass);
       }
       material.needsUpdate = true;
     }
@@ -209,6 +197,21 @@ function applyPbrOverride(
   if (pbr.thickness !== undefined) {
     material.thickness = pbr.thickness;
   }
+  // 体积/色散三字段（v1.1）：r185 WebGPU 下生效路径已验证——
+  // StandardNodeLibrary.fromMaterial 枚举拷贝经典材质自有属性到
+  // MeshPhysicalNodeMaterial，其 setup 用 materialDispersion /
+  // materialAttenuation*（MaterialReferenceNode 每帧读 material 同名属性）。
+  // 注意色散仅在 transmission > 0 时参与着色（PhysicalLightingModel 的
+  // getIBLVolumeRefraction），attenuation 同理需 transmission/thickness。
+  if (pbr.dispersion !== undefined) {
+    material.dispersion = pbr.dispersion;
+  }
+  if (pbr.attenuationColor !== undefined) {
+    material.attenuationColor.set(pbr.attenuationColor);
+  }
+  if (pbr.attenuationDistance !== undefined) {
+    material.attenuationDistance = pbr.attenuationDistance;
+  }
   if (pbr.clearcoat !== undefined) {
     material.clearcoat = pbr.clearcoat;
   }
@@ -224,111 +227,4 @@ function applyPbrOverride(
   if (pbr.alphaMode !== undefined) {
     material.transparent = pbr.alphaMode === 'blend';
   }
-}
-
-/**
- * Layer Weight 多层镀膜玻璃（移植自旧工程验证过的 TSL 菲涅尔复建，
- * 参数全部来自 glass.layers 数据）。
- *
- * 与旧实现的差异：旧配置把"层间混合比"（innerBlend/outerBlend）与层 IOR
- * 分开携带；契约的每层只有 ior + color，因此层间菲涅尔系数直接取该层
- * 自身的折射率作为边界 eta（物理含义：空气/镀膜边界的菲涅尔反射率）。
- * 单层时退化为恒等着色 + 按 IOR 推导的镜面反射率。
- */
-function installLayerWeightGlass(
-  material: MeshPhysicalMaterial,
-  glass: GlassOverride,
-): void {
-  const layers = glass.layers;
-  const layerColors = layers.map((layer) => new Color(layer.color));
-  const toLinearVec3 = (color: Color) => vec3(color.r, color.g, color.b);
-
-  // 视角余弦：法线与视线方向的点积
-  const dotNV = normalView.dot(positionViewDirection);
-  // 每层的菲涅尔系数（以该层 IOR 为边界 eta）
-  const factors = layers.map((layer) =>
-    dielectricFresnelNode(dotNV, layer.ior),
-  );
-
-  // 颜色图：从最内层向外逐层混合，mix(a, b, t) = a(1−t) + b·t
-  let graphColor: Node<'vec3'> = toLinearVec3(layerColors[layers.length - 1]);
-  for (let i = layers.length - 2; i >= 0; i--) {
-    graphColor = mix(toLinearVec3(layerColors[i]), graphColor, factors[i]);
-  }
-
-  // 法向入射标定：让正视角的合成色等于 GLB 基础色，保留项目既有的曝光匹配，
-  // 只恢复 Blender 的角度响应（旧工程同口径）
-  const channelOf = (color: Color, channel: number) =>
-    channel === 0 ? color.r : channel === 1 ? color.g : color.b;
-  const normalGraph = [0, 1, 2].map((channel) => {
-    let acc = channelOf(layerColors[layers.length - 1], channel);
-    for (let i = layers.length - 2; i >= 0; i--) {
-      const factor = dielectricFresnelScalar(1, layers[i].ior);
-      acc = channelOf(layerColors[i], channel) * (1 - factor) + acc * factor;
-    }
-    return Math.max(acc, 1e-6);
-  });
-  const calibration = vec3(
-    material.color.r / normalGraph[0],
-    material.color.g / normalGraph[1],
-    material.color.b / normalGraph[2],
-  );
-  const carrier = material as PhysicalNodeCarrier;
-  carrier.colorNode = graphColor.mul(calibration);
-
-  // 有效镜面反射率：各层 R0 按同样的菲涅尔系数混合，再反解出等效 IOR
-  const r0Of = (ior: number) =>
-    ((Math.max(ior, 1) - 1) / (Math.max(ior, 1) + 1)) ** 2;
-  let effectiveR0: Node<'float'> = float(r0Of(layers[layers.length - 1].ior));
-  for (let i = layers.length - 2; i >= 0; i--) {
-    effectiveR0 = mix(r0Of(layers[i].ior), effectiveR0, factors[i]);
-  }
-  const sqrtR0 = effectiveR0.clamp(0, 0.98).sqrt();
-  carrier.iorNode = sqrtR0.add(1).div(sqrtR0.oneMinus().max(0.01));
-
-  material.userData.prismLayerWeightGlass = { layers };
-  material.needsUpdate = true;
-}
-
-/**
- * 精确电介质菲涅尔（s + p 偏振平均），TSL 节点版。
- * eta = 入射侧/出射侧相对折射率（≥1）。
- */
-function dielectricFresnelNode(
-  cosine: Node<'float'>,
-  eta: number,
-): Node<'float'> {
-  const safeEta = Math.max(eta, 1e-5);
-  const cosI = cosine.abs().clamp(0, 1);
-  const cosT = cosI
-    .pow(2)
-    .oneMinus()
-    .div(safeEta * safeEta)
-    .oneMinus()
-    .max(0)
-    .sqrt();
-  const rs = cosI
-    .mul(safeEta)
-    .sub(cosT)
-    .div(cosI.mul(safeEta).add(cosT))
-    .pow(2);
-  const rp = cosI
-    .sub(cosT.mul(safeEta))
-    .div(cosI.add(cosT.mul(safeEta)))
-    .pow(2);
-  return rs.add(rp).mul(0.5);
-}
-
-/** 精确电介质菲涅尔，标量版（法向入射标定用） */
-function dielectricFresnelScalar(cosine: number, eta: number): number {
-  const cosI = Math.min(Math.max(Math.abs(cosine), 0), 1);
-  const safeEta = Math.max(eta, 1e-5);
-  const cosT = Math.sqrt(
-    Math.max(1 - (1 - cosI * cosI) / (safeEta * safeEta), 0),
-  );
-  const rsDenominator = Math.max(safeEta * cosI + cosT, 1e-6);
-  const rpDenominator = Math.max(cosI + safeEta * cosT, 1e-6);
-  const rs = ((safeEta * cosI - cosT) / rsDenominator) ** 2;
-  const rp = ((cosI - safeEta * cosT) / rpDenominator) ** 2;
-  return (rs + rp) * 0.5;
 }

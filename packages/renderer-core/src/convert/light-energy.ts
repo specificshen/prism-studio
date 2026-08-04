@@ -4,7 +4,7 @@ import type { LightType } from '@prism/scene-schema';
  * Blender 灯光功率（瓦特）→ three 光强的唯一换算层。
  * 本文件是全部"光能换算系数"的唯一合法所在地，其它模块不得自行换算。
  *
- * three r184（WebGPU）灯光为物理单位口径：
+ * three r185（WebGPU）灯光为物理单位口径：
  * - DirectionalLight.intensity ≈ 辐照度（lux 量级，无量纲倍率）
  * - PointLight / SpotLight.intensity = 发光强度（坎德拉 cd）
  * - RectAreaLight.intensity = 亮度（尼特 nit = cd/m²）

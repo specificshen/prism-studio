@@ -1,12 +1,12 @@
 # Prism Scene 契约 v1（`prism-scene` / `version: 1`）
 
-这份文档是甲方前端与 ISV 之间的**唯一数据契约**的人读说明。机器读定义在
+这份文档是甲方前端与乙方设计师之间的**唯一数据契约**的人读说明。机器读定义在
 `packages/scene-schema/src/`（zod strict schema），离线校验用
 `packages/scene-schema/json-schema/prism-scene-v1.json`（自动生成）。三者口径不一致时，
 以 zod schema 为准，并视为文档/产物过期需要重新生成。
 
 - 交付物：单个 `*.prism.json` 文件 + 其引用的外部资源（GLB / EXR）。
-- 生产者：ISV 的 Blender 导出器（`tools/blender/prism_export.py`）。
+- 生产者：设计师的 Blender 导出器（`tools/blender/prism_export.py`）。
 - 消费者：Prism Studio 编辑器与 `@prism/renderer-core`。
 
 ---
@@ -178,6 +178,7 @@
 | `sunElevationDeg` | number | 度 | 必填 | 太阳高度角 |
 | `sunAzimuthDeg` | number | 度 | 必填 | 太阳方位角（0 正北，顺时针） |
 | `turbidity` | number | — | 可选 | 大气浑浊度 |
+| `lightingStrength` | number | 倍率 | **1** | 天空光照（IBL）强度：天穹烘焙成 `scene.environment` 后的 `environmentIntensity`（v1.1 新增可选字段，旧场景包向后兼容） |
 | `fog` | object | — | 可选 | 见下方 fog 表 |
 
 **`type: "physical-atmosphere"`**（**experimental**，参数与实现可能随版本调整）：
@@ -262,6 +263,9 @@ GLB 导出的 PBR 参数是基准，本表只做**覆盖**；缺省字段 = 沿�
 | `ior` | number | ≥1 | 折射率（默认 1.5） |
 | `transmission` | number | 0~1 | 透射率 |
 | `thickness` | number | ≥0 米 | 体积厚度，配合 transmission |
+| `dispersion` | number | ≥0 | 色散强度，对应 `material.dispersion`；仅 transmission > 0 时可见（v1.1 新增，向后兼容） |
+| `attenuationColor` | color | — | 体积衰减色（Beer 定律），配合 transmission/thickness（v1.1 新增，向后兼容） |
+| `attenuationDistance` | number | >0 米 | 体积衰减距离，对应 `material.attenuationDistance`（v1.1 新增，向后兼容） |
 | `clearcoat` | number | 0~1 | 清漆强度 |
 | `clearcoatRoughness` | number | 0~1 | 清漆粗糙度 |
 | `emissive` | color | — | 自发光颜色 |
@@ -293,11 +297,11 @@ GLB 导出的 PBR 参数是基准，本表只做**覆盖**；缺省字段 = 沿�
 
 ---
 
-## 4. 与旧 ISV 工程 6 种 JSON 的对照
+## 4. 与旧乙方工程 6 种 JSON 的对照
 
 旧工程（`threejs-webgpu-editor-core`）并存至少 6 种 JSON 形态（`render_config.json`、
 `final-portable-*.json`、`江苏银行-webgpu.json`、work/ 下多代 profile 文件……），
-无 `format`/`version` 靠字段嗅探区分。v1 不做兼容导入，ISV 用新导出器重新导出，干净起步。对照如下：
+无 `format`/`version` 靠字段嗅探区分。v1 不做兼容导入，设计师用新导出器重新导出，干净起步。对照如下：
 
 | 旧工程做法 | schema v1 | 为什么 |
 | --- | --- | --- |
@@ -306,7 +310,7 @@ GLB 导出的 PBR 参数是基准，本表只做**覆盖**；缺省字段 = 沿�
 | 中文显示名当主键（`"name": "灯光_总览_01"` 直接做键） | 稳定 `id` 主键 + `name` 仅显示 + `match.names` 显式绑定 | 改名即断链；显示名从来不是好键 |
 | 变换三份冗余：`location` + `rotationEuler` + 行主序嵌套 `matrixWorld` | 唯一 `transform`：列主序 16 数组 | 冗余必然不一致；一种矩阵一种序 |
 | 无 `format`/`version`，靠"有哪些字段"嗅探格式 | `format: "prism-scene"` + `version: 1` 必填，校验器先查身份 | 嗅探在字段演进后必然误判 |
-| Bloom/雾/GTAO/色调映射/大气参数硬编码在 `main.js`，JSON 里根本没有 | 全部进 `post` / `environment` / `renderer` 数据 | 效果不可评审、不可复现、ISV 改不了 |
+| Bloom/雾/GTAO/色调映射/大气参数硬编码在 `main.js`，JSON 里根本没有 | 全部进 `post` / `environment` / `renderer` 数据 | 效果不可评审、不可复现、设计师改不了 |
 | 相机 fov 与 matrix 混用、`camera`/`blenderCamera` 双段并存 | 唯一 `cameras[]`：物理参数 `lensMm + sensorWidthMm + sensorFit`，fov 只在渲染层换算 | 单一换算层，不在数据里存推导结果 |
 | snake_case / camelCase 混用、`SUN`/`sun` 大小写混用 | 全量 camelCase；枚举一律小写（`sun`/`point`/`spot`/`area`） | 口径统一，机器与人都不用猜 |
 
@@ -352,7 +356,7 @@ const result = validateScenePackage(JSON.parse(fileText));
 
 ## 6. 离线校验：JSON Schema
 
-不用 TS 的协作者（如 ISV 的 Python 工具链）用生成的 JSON Schema 离线校验：
+不用 TS 的协作者（如设计师的 Python 工具链）用生成的 JSON Schema 离线校验：
 
 ```bash
 pnpm --filter @prism/scene-schema build

@@ -174,12 +174,13 @@ export class PrismRenderer {
     this.scene.add(this.modelRoot);
     this.modelBounds = new Box3().setFromObject(this.modelRoot);
 
-    // 2. 环境（HDRI 为异步加载）
+    // 2. 环境（HDRI 为异步加载；procedural-sky 用本渲染器烘焙天空 IBL）
     this.environmentHandle = await applyEnvironment(
       this.scene,
       pkg.environment,
       {
         baseUrl: options.baseUrl,
+        renderer: this.threeRenderer,
       },
     );
     warnings.push(...this.environmentHandle.warnings);
@@ -238,6 +239,7 @@ export class PrismRenderer {
     this.environmentHandle?.dispose();
     this.environmentHandle = await applyEnvironment(this.scene, environment, {
       baseUrl: this.baseUrl,
+      renderer: this.threeRenderer,
     });
   }
 
