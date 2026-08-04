@@ -9,15 +9,22 @@
     "check": "biome check --write .",
     "check:ci": "biome check .",
     "dev": "pnpm --filter @prism/editor dev",
+    "prepare": "husky",
     "sample": "node tools/make-sample-scene.mjs",
     "test": "vitest run",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "verify": "pnpm check:ci && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
     "@gltf-transform/core": "^4.2.1",
     "@gltf-transform/functions": "^4.2.1",
     "@types/node": "^26.0.0",
+    "husky": "^9.1.7",
     "typescript": "^7.0.2",
     "vitest": "^3.2.4"
   }

@@ -1,0 +1,40 @@
+# Prism Studio 持续集成
+# 仓库推上 GitHub 后自动生效：push 与 Pull Request 都会触发完整门禁
+# （Biome 静态检查 → 类型检查 → 单测 → 生产构建），与本地 `pnpm verify` 一致。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 安装 Node 22（启用 pnpm 缓存）
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: 安装依赖（严格按 lockfile）
+        run: pnpm install --frozen-lockfile
+
+      - name: Biome 静态检查（只检查不修复）
+        run: pnpm check:ci
+
+      - name: TypeScript 类型检查
+        run: pnpm typecheck
+
+      - name: Vitest 单测
+        run: pnpm test
+
+      - name: 全部包生产构建
+        run: pnpm build

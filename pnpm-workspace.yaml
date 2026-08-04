@@ -2,5 +2,11 @@ packages:
   - 'packages/*'
   - 'apps/*'
 
+# three 与 @types/three 统一走 catalog 引用（"catalog:"），
+# 保证 packages/ 与 apps/ 版本永远一致，升级只改这里。
+catalog:
+  three: 0.185.1
+  '@types/three': ~0.185.3
+
 allowBuilds:
   esbuild: true

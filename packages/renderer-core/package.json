@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@prism/scene-schema": "workspace:*",
-    "three": "0.184.0"
+    "three": "catalog:"
   },
   "devDependencies": {
-    "@types/three": "~0.184.1"
+    "@types/three": "catalog:"
   }
 }

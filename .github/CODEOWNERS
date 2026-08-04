@@ -1,0 +1,8 @@
+# CODEOWNERS：代码归属与审查规则（GitHub 语法，仓库推上 GitHub 后自动生效）。
+# 用法：把下面的 @OWNER 占位替换成你自己的 GitHub 账号（如 @zhangsan），
+# 之后涉及这些目录的 PR 会自动请求对应 owner 审查。
+#
+# packages/（契约 schema + 渲染核）与 tools/（Blender 导出器、对比工具）
+# 只有甲方前端（owner）可改；乙方设计师不动这些目录。
+/packages/ @OWNER
+/tools/ @OWNER

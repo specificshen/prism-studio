@@ -21,7 +21,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "tailwind-merge": "^3.6.0",
-    "three": "0.184.0"
+    "three": "catalog:"
   },
   "devDependencies": {
     "@rsbuild/core": "^2.1.2",
@@ -29,7 +29,7 @@
     "@tailwindcss/postcss": "^4.3.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@types/three": "~0.184.1",
+    "@types/three": "catalog:",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.2"
   }
