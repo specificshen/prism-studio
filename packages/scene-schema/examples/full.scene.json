@@ -1,0 +1,289 @@
+{
+  "format": "prism-scene",
+  "version": 1,
+  "meta": {
+    "name": "完整示例场景：展厅",
+    "sourceBlend": "showroom.blend",
+    "exportedAt": "2026-02-14T10:30:00+08:00",
+    "exporterVersion": "prism-export 0.1.0"
+  },
+  "coordinateSystem": "blender",
+  "units": "metric",
+  "assets": {
+    "model": {
+      "url": "showroom.glb",
+      "sha256": "b7e3d9f102a4c6e8b0d2f4a6c8e0b2d4f6a8c0e2b4d6f8a0c2e4b6d8f0a2c4e6"
+    },
+    "environment": {
+      "url": "env/rooftop_2k.exr",
+      "sha256": "c8f4e0a213b5d7f9c1e3a5b7d9f1e3a5c7b9d1f3e5a7c9b1d3f5e7a9c1b3d5e7"
+    }
+  },
+  "renderer": {
+    "toneMapping": {
+      "type": "ACESFilmic",
+      "exposureStops": 0.5
+    },
+    "colorGrading": {
+      "contrast": 0.08,
+      "saturation": 0.05,
+      "whiteBalance": 0,
+      "highlights": -0.1,
+      "shadows": 0.06
+    },
+    "shadows": {
+      "mapSize": 4096,
+      "bias": -0.00015,
+      "normalBias": 0.03,
+      "radius": 6,
+      "primaryLightId": "light-sun-key"
+    }
+  },
+  "post": {
+    "bloom": {
+      "enabled": true,
+      "threshold": 1,
+      "strength": 0.35,
+      "radius": 0.6
+    },
+    "ao": {
+      "enabled": true,
+      "strength": 0.8,
+      "radius": 0.5,
+      "resolutionScale": 1
+    },
+    "ssgi": {
+      "enabled": false,
+      "strength": 1,
+      "radius": 2
+    },
+    "ssr": {
+      "enabled": false,
+      "strength": 0.5,
+      "quality": "medium"
+    }
+  },
+  "environment": {
+    "type": "hdri",
+    "url": "env/rooftop_2k.exr",
+    "strength": 0.8,
+    "lightingStrength": 1.2,
+    "rotation": [0, 0, 35],
+    "visibleBackground": {
+      "type": "texture",
+      "url": "env/rooftop_2k.exr"
+    },
+    "fog": {
+      "enabled": true,
+      "color": "#a8bdd0",
+      "near": 15,
+      "far": 120
+    }
+  },
+  "cameras": [
+    {
+      "id": "cam-main",
+      "name": "Camera",
+      "transform": [
+        0.68592, 0.72768, 0, 0, -0.32401, 0.30542, 0.8954, 0, 0.65156, -0.61417,
+        0.44527, 0, 7.35889, -6.92579, 4.95831, 1
+      ],
+      "lensMm": 50,
+      "sensorWidthMm": 36,
+      "sensorFit": "auto",
+      "clipNear": 0.1,
+      "clipFar": 1000,
+      "isDefault": true
+    },
+    {
+      "id": "cam-closeup",
+      "name": "Camera_Closeup",
+      "transform": [
+        0.81915, 0.57358, 0, 0, -0.14845, 0.21201, 0.96593, 0, 0.55403,
+        -0.79124, 0.25882, 0, 2.5, -3.5, 1.8, 1
+      ],
+      "lensMm": 85,
+      "sensorWidthMm": 36,
+      "sensorFit": "vertical",
+      "clipNear": 0.05,
+      "clipFar": 500
+    }
+  ],
+  "lights": [
+    {
+      "id": "light-sun-key",
+      "name": "Sun_Key",
+      "type": "sun",
+      "color": "#fff4e0",
+      "energyWatts": 3,
+      "transform": [
+        0.90286, 0.42101, -0.08716, 0, -0.21114, 0.61078, 0.76313, 0, 0.37452,
+        -0.6706, 0.64034, 0, 0, 0, 6, 1
+      ],
+      "shadow": {
+        "castShadow": true,
+        "mapSize": 4096,
+        "bias": -0.0001,
+        "normalBias": 0.02,
+        "radius": 5
+      }
+    },
+    {
+      "id": "light-fill-point",
+      "name": "Fill_Point",
+      "type": "point",
+      "color": "#dfe8ff",
+      "energyWatts": 100,
+      "intensityScale": 0.8,
+      "transform": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1.5, -1, 2.2, 1],
+      "shadow": {
+        "castShadow": false
+      }
+    },
+    {
+      "id": "light-accent-spot",
+      "name": "Accent_Spot",
+      "type": "spot",
+      "color": "#ffe6c4",
+      "energyWatts": 250,
+      "intensityScale": 1,
+      "transform": [
+        0.99027, 0, -0.13917, 0, 0.03602, 0.96593, 0.2563, 0, 0.13443, -0.25882,
+        0.95653, 0, 2, 1, 3.2, 1
+      ],
+      "shadow": {
+        "castShadow": true,
+        "mapSize": 2048
+      },
+      "spot": {
+        "angleDeg": 45,
+        "blend": 0.3
+      }
+    },
+    {
+      "id": "light-softbox-area",
+      "name": "Softbox_Area",
+      "type": "area",
+      "color": "#ffffff",
+      "energyWatts": 400,
+      "intensityScale": 1,
+      "transform": [
+        0.86603, -0.5, 0, 0, 0.25, 0.43301, 0.86603, 0, -0.43301, -0.75, 0.5, 0,
+        -2, 1, 2.8, 1
+      ],
+      "area": {
+        "width": 2,
+        "height": 1.2
+      }
+    }
+  ],
+  "materials": [
+    {
+      "id": "mat-ground",
+      "name": "Ground",
+      "match": {
+        "names": ["Ground"]
+      },
+      "pbr": {
+        "baseColor": "#c9c9c9",
+        "metalness": 0,
+        "roughness": 0.9
+      }
+    },
+    {
+      "id": "mat-curtain-wall-glass",
+      "name": "CurtainWall_Glass",
+      "match": {
+        "names": ["CurtainWall_Glass", "CurtainWall_Glass_A"]
+      },
+      "glass": {
+        "type": "layer-weight",
+        "layers": [
+          {
+            "ior": 1.52,
+            "color": "#dfe9f2"
+          },
+          {
+            "ior": 1.45,
+            "color": "#9fb8cc"
+          },
+          {
+            "ior": 1.38,
+            "color": "#6f8ba8"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mat-screen",
+      "name": "Screen_Emissive",
+      "match": {
+        "names": ["Screen"]
+      },
+      "pbr": {
+        "baseColor": "#101418",
+        "roughness": 0.4,
+        "ior": 1.5,
+        "transmission": 0,
+        "thickness": 0,
+        "clearcoat": 0.2,
+        "clearcoatRoughness": 0.1,
+        "emissive": "#1a2b3c",
+        "emissiveIntensity": 2.5,
+        "alphaMode": "opaque"
+      }
+    },
+    {
+      "id": "mat-acrylic-panel",
+      "name": "Acrylic_Panel",
+      "match": {
+        "names": ["Acrylic_Panel"]
+      },
+      "pbr": {
+        "baseColor": "#f2f6f8",
+        "opacity": 0.6,
+        "metalness": 0,
+        "roughness": 0.15,
+        "ior": 1.49,
+        "transmission": 0.9,
+        "thickness": 0.01,
+        "alphaMode": "blend"
+      }
+    }
+  ],
+  "objects": [
+    {
+      "id": "obj-ground",
+      "name": "Ground",
+      "match": {
+        "names": ["Ground"]
+      },
+      "castShadow": false,
+      "receiveShadow": true
+    },
+    {
+      "id": "obj-glass-wall",
+      "name": "Glass_Wall",
+      "match": {
+        "names": ["Glass_Wall"]
+      },
+      "visible": true,
+      "castShadow": false,
+      "receiveShadow": false
+    },
+    {
+      "id": "obj-interior",
+      "name": "Interior",
+      "match": {
+        "names": ["Interior"]
+      },
+      "visible": true,
+      "castShadow": true,
+      "receiveShadow": true
+    }
+  ],
+  "probes": {
+    "reflection": [],
+    "planar": []
+  }
+}

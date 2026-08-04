@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.local
+*.log
+.DS_Store
+
+# 视觉回归等工作产物不入库（参考旧工程 444MB work/ 的教训）
+work/
+tmp*/
+__pycache__/
+*.pyc
+
+# 本地导出的场景包
+*.local.prism.json

@@ -1,0 +1,92 @@
+{
+  "format": "prism-scene",
+  "version": 1,
+  "meta": {
+    "name": "最小示例场景",
+    "sourceBlend": "minimal.blend",
+    "exportedAt": "2026-01-01T08:00:00Z",
+    "exporterVersion": "prism-export 0.1.0"
+  },
+  "coordinateSystem": "blender",
+  "units": "metric",
+  "assets": {
+    "model": {
+      "url": "minimal.glb",
+      "sha256": "9f2c4a7b1d8e6f30415263748596a7b8c9d0e1f2031425364758697a8b9c0d1e"
+    }
+  },
+  "renderer": {
+    "toneMapping": {
+      "type": "AgX",
+      "exposureStops": 0
+    },
+    "shadows": {
+      "mapSize": 2048,
+      "bias": -0.0002,
+      "normalBias": 0.02,
+      "radius": 4
+    }
+  },
+  "post": {},
+  "environment": {
+    "type": "hdri",
+    "url": "env/studio_1k.exr",
+    "strength": 1,
+    "lightingStrength": 1,
+    "rotation": [0, 0, 0]
+  },
+  "cameras": [
+    {
+      "id": "cam-main",
+      "name": "Camera",
+      "transform": [
+        0.68592, 0.72768, 0, 0, -0.32401, 0.30542, 0.8954, 0, 0.65156, -0.61417,
+        0.44527, 0, 7.35889, -6.92579, 4.95831, 1
+      ],
+      "lensMm": 50,
+      "sensorWidthMm": 36,
+      "sensorFit": "auto",
+      "clipNear": 0.1,
+      "clipFar": 1000,
+      "isDefault": true
+    }
+  ],
+  "lights": [
+    {
+      "id": "light-sun",
+      "name": "Sun",
+      "type": "sun",
+      "color": "#fff4e0",
+      "energyWatts": 3,
+      "transform": [
+        0.90286, 0.42101, -0.08716, 0, -0.21114, 0.61078, 0.76313, 0, 0.37452,
+        -0.6706, 0.64034, 0, 0, 0, 6, 1
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "id": "mat-ground",
+      "name": "Ground",
+      "match": {
+        "names": ["Ground"]
+      },
+      "pbr": {
+        "baseColor": "#c9c9c9",
+        "metalness": 0,
+        "roughness": 0.9
+      }
+    }
+  ],
+  "objects": [
+    {
+      "id": "obj-ground",
+      "name": "Ground",
+      "match": {
+        "names": ["Ground"]
+      },
+      "castShadow": false,
+      "receiveShadow": true
+    }
+  ]
+}
