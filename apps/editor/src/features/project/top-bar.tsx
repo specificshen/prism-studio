@@ -77,7 +77,12 @@ export function TopBar() {
         onChange={(event) => {
           const files = Array.from(event.target.files ?? []);
           if (files.length > 0) {
-            void loadFromFiles(files);
+            // 失败时自动展开校验报告
+            void loadFromFiles(files).then((ok) => {
+              if (!ok) {
+                setReportOpen(true);
+              }
+            });
           }
           // 允许连续选择同一批文件
           event.target.value = '';
@@ -98,7 +103,14 @@ export function TopBar() {
         variant="secondary"
         size="sm"
         disabled={loading}
-        onClick={() => void loadSample()}
+        onClick={() =>
+          // 失败时自动展开校验报告，让错误可见而不是只亮 badge
+          void loadSample().then((ok) => {
+            if (!ok) {
+              setReportOpen(true);
+            }
+          })
+        }
       >
         <Sparkles />
         加载示例
