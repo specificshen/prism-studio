@@ -1,4 +1,5 @@
 import type { RendererShadows, SceneLight } from '@prism/scene-schema';
+import { RectAreaLightTexturesLib } from 'three/addons/lights/RectAreaLightTexturesLib.js';
 import {
   type Box3,
   Color,
@@ -9,6 +10,7 @@ import {
   PointLight,
   Quaternion,
   RectAreaLight,
+  RectAreaLightNode,
   type Scene,
   Sphere,
   SpotLight,
@@ -17,6 +19,22 @@ import {
 import { blenderMatrixToThree } from '../convert/coordinates.ts';
 import { blenderLightToThreeIntensity } from '../convert/light-energy.ts';
 import { EDITOR_DEFAULTS } from '../core/presets.ts';
+
+/**
+ * WebGPU 下 RectAreaLight 着色需要 LTC 查找表纹理，three 官方要求用户侧注入
+ * （见 RectAreaLight 文档：`RectAreaLightNode.setLTC(RectAreaLightTexturesLib.init())`）。
+ * 不注入则 RectAreaLightNode 编译抛错，所有含灯光材质编译失败、整场景渲染为黑。
+ * 懒加载一次：仅在场景确实含 area 灯时初始化，避免常驻约 320KB 数据纹理。
+ */
+let rectAreaLightLtcReady = false;
+
+function ensureRectAreaLightLtc(): void {
+  if (rectAreaLightLtcReady) {
+    return;
+  }
+  RectAreaLightNode.setLTC(RectAreaLightTexturesLib.init());
+  rectAreaLightLtcReady = true;
+}
 
 export interface ApplyLightingOptions {
   /** 场景包围盒（通常取 GLB 场景的 Box3），用于太阳灯阴影相机贴合 */
@@ -159,6 +177,7 @@ function buildLight(
         );
         return null;
       }
+      ensureRectAreaLightLtc();
       const area = new RectAreaLight(
         color,
         blenderLightToThreeIntensity(
