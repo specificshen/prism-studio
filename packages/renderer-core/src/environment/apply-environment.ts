@@ -4,7 +4,7 @@ import type {
   SceneEnvironment,
 } from '@prism/scene-schema';
 import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
-import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { SkyMesh } from 'three/addons/objects/SkyMesh.js';
 import {
   Color,
@@ -106,12 +106,39 @@ function makeHandle(
   };
 }
 
-/** 按扩展名选择 EXR / RGBE 加载器 */
+/** EXR 文件魔数（小端 0x01312F76，即字节 76 2F 31 01） */
+const EXR_MAGIC_BYTES = [0x76, 0x2f, 0x31, 0x01];
+
+/** data: URI 没有扩展名，解码头部 base64 嗅探 EXR 魔数 */
+function sniffExrMagicFromDataUrl(url: string): boolean {
+  const commaIndex = url.indexOf(',');
+  if (commaIndex < 0) {
+    return false;
+  }
+  try {
+    // 16 个 base64 字符覆盖前 12 字节，足以判断 4 字节魔数
+    const head = atob(url.slice(commaIndex + 1, commaIndex + 17));
+    return EXR_MAGIC_BYTES.every(
+      (byte, index) => head.charCodeAt(index) === byte,
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** 选择 EXR / Radiance HDR 加载器：先看扩展名，data: URI 再嗅探内容魔数 */
+export function isExrUrl(url: string): boolean {
+  if (/\.exr($|\?)/i.test(url)) {
+    return true;
+  }
+  return url.startsWith('data:') && sniffExrMagicFromDataUrl(url);
+}
+
+/** 按实际内容选择 EXR / HDR 加载器 */
 async function loadHdrTexture(url: string): Promise<Texture> {
-  const isExr = /\.exr($|\?)/i.test(url);
-  const texture = isExr
+  const texture = isExrUrl(url)
     ? await new EXRLoader().loadAsync(url)
-    : await new RGBELoader().loadAsync(url);
+    : await new HDRLoader().loadAsync(url);
   texture.mapping = EquirectangularReflectionMapping;
   return texture;
 }
