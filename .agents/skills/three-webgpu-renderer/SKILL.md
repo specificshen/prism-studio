@@ -6,7 +6,7 @@ user-invocable: true
 
 # 渲染核开发指南
 
-本 Skill 是 `@prism/renderer-core`（Three.js WebGPU 渲染核，纯 TS + three@0.184，无 React）的架构与约束。工程通用约定见 `prism-patterns`；契约字段见 `docs/schema-v1.md`；契约演进见 `scene-schema-evolution`。
+本 Skill 是 `@prism/renderer-core`（Three.js WebGPU 渲染核，纯 TS + three@0.185，无 React）的架构与约束。工程通用约定见 `prism-patterns`；契约字段见 `docs/schema-v1.md`；契约演进见 `scene-schema-evolution`。
 
 ## 模块图
 
@@ -17,7 +17,7 @@ packages/renderer-core/src/
 ├── loaders/       # GLB/EXR 加载、assets 的 sha256 校验
 ├── environment/   # hdri / procedural-sky / physical-atmosphere、雾
 ├── lighting/      # sun/point/spot/area、阴影按需重建与 bootstrap
-├── materials/     # PBR 覆盖、Layer Weight 三层玻璃 TSL、emissive 扩展
+├── materials/     # PBR 覆盖、match.names 匹配；自定义 TSL（玻璃）在 materials/tsl/ 注册表扩展点
 ├── pipeline/      # 后期 MRT 三掩码结构：bloom / GTAO / 色彩分级 / tone mapping
 └── presets.ts     # EDITOR_DEFAULTS：数据缺省时的兜底预设（逐条带注释）
 ```
@@ -78,8 +78,9 @@ const strength = pkg.post.bloom.enabled
 
 ## TSL / WebGPU 注意点
 
-- three@0.184 WebGPU 渲染器 + TSL 节点材质；不要回退去写 GLSL 字符串材质。
+- three@0.185 WebGPU 渲染器 + TSL 节点材质；不要回退去写 GLSL 字符串材质。
 - 材质扩展（玻璃 layer-weight/iridescence、emissive）用节点组合，参数全部来自数据。
+- 新增/修改自定义 TSL 材质（玻璃新类型、新插槽组合）时加载 `tsl-material-authoring`：materials/tsl/ 注册表扩展点、开发六步流程、r185 插槽速查都在那里。
 - **阴影初始化有时序问题**：阴影按需重建，必须走 bootstrap 处理（移植自旧工程验证过的实现），不要在首帧直接开全量阴影。
 - WebGPU 优先；浏览器不支持时**明确报错提示**，不要静默降级出错误画面。
 - 相机 FOV 换算要处理 `sensorFit`；convert 层配了 Vitest 单测，改换算逻辑前先跑测试。
@@ -107,5 +108,6 @@ grep -rn "\.name\.includes\|\.name\.match" packages/renderer-core/src --include=
 grep -rn "Math\.random" packages/renderer-core/src
 grep -rn "0x[0-9a-fA-F]\{6\}" packages/renderer-core/src | grep -v EDITOR_DEFAULTS
 
-pnpm --filter @prism/renderer-core test
+pnpm --filter @prism/renderer-core test   # 本包单测快查
+pnpm verify                               # 交付前一键门禁（check:ci + typecheck + test + build）
 ```

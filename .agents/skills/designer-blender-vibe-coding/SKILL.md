@@ -1,12 +1,12 @@
 ---
-name: isv-vibe-coding
-description: 面向 ISV（Blender 供应商）的自然语言协作模板。ISV 用自然语言让 AI 协助重新导出、排查效果差异、加灯光、检查材质映射、清理重名、调后期时加载；附 ISV 禁区（不改 packages/ 代码、不在前端代码里调参）。
+name: designer-blender-vibe-coding
+description: 面向乙方设计师（Blender 交付侧）的自然语言协作模板。设计师用自然语言让 AI 协助重新导出、排查效果差异、加灯光、检查材质映射、清理重名、调后期时加载；附设计师禁区（不改 packages/ 代码、不在前端代码里调参）。
 user-invocable: true
 ---
 
-# ISV Vibe Coding 指南
+# 乙方设计师（Blender 侧）Vibe Coding 指南
 
-本 Skill 面向 ISV：你们负责 Blender 建模与场景包数据，不需要懂前端，用自然语言让 AI 帮你干活即可。导出细节见 `blender-export-pipeline`；效果对标流程见 `visual-regression`；需要新数据字段时走 `scene-schema-evolution`。
+本 Skill 面向乙方设计师：你们负责 Blender 建模与场景包数据，不需要懂前端，用自然语言让 AI 帮你干活即可。与 `designer-vibe-coding` 的分工：`designer-vibe-coding` 管编辑器/数据侧的日常调效果，本 Skill 管 Blender 侧的导出与交付协作。导出细节见 `blender-export-pipeline`；效果对标流程见 `visual-regression`；需要新数据字段时走 `scene-schema-evolution`。
 
 ## 核心理念
 
@@ -103,7 +103,7 @@ AI 该做的：
 2. 反馈给甲方前端，走 `scene-schema-evolution` 六步流程加字段。
 3. 你这边等导出器与编辑器更新后重新导出即可。
 
-## ISV 禁区
+## 设计师禁区
 
 - ❌ 不要改 `packages/`、`apps/` 下任何代码——那是甲方前端的领地。
 - ❌ 不要在前端代码里调参——效果一律走数据（Blender 重新导出，或编辑器面板→导出）。

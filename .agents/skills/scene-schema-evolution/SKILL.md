@@ -1,6 +1,6 @@
 ---
 name: scene-schema-evolution
-description: prism-studio 场景契约（schema）演进流程。当 ISV 需要在 Blender 里控制新效果、或现有字段表达不足时加载：什么时候动 schema、加字段六步流程、版本与废弃规则、每步验证命令。
+description: prism-studio 场景契约（schema）演进流程。当设计师需要在 Blender 里控制新效果、或现有字段表达不足时加载：什么时候动 schema、加字段六步流程、版本与废弃规则、每步验证命令。
 user-invocable: true
 ---
 
@@ -10,11 +10,11 @@ user-invocable: true
 
 ## 什么时候要动 schema
 
-唯一正当理由：**ISV 需要在 Blender 侧控制某种效果数据，而现有 schema 表达不了。**
+唯一正当理由：**设计师需要在 Blender 侧控制某种效果数据，而现有 schema 表达不了。**
 
 典型信号：
 
-- ISV 说「这个效果我在 Blender 里调了但前端没变」——先确认字段是否存在，不存在才走本流程。
+- 设计师说「这个效果我在 Blender 里调了但前端没变」——先确认字段是否存在，不存在才走本流程。
 - 渲染核里出现了一个想写死的视觉参数——按数据驱动铁律，它应该进 schema（或 `EDITOR_DEFAULTS` 兜底）。
 
 不要动 schema 的情况：
@@ -40,7 +40,7 @@ pnpm --filter @prism/scene-schema test
 
 ### ② 重新生成 JSON Schema
 
-构建期从 zod 生成 JSON Schema，供 ISV 与外部工具离线校验：
+构建期从 zod 生成 JSON Schema，供设计师与外部工具离线校验：
 
 ```bash
 pnpm --filter @prism/scene-schema build
@@ -72,10 +72,10 @@ pnpm typecheck
 - 更新 scene-schema 的示例 JSON。
 - 需要时重新生成演示场景：`pnpm sample`。
 
-最后全量验证：
+最后全量验证（改完必跑的一键门禁）：
 
 ```bash
-pnpm check && pnpm typecheck && pnpm test
+pnpm verify
 ```
 
 ## 版本规则
@@ -88,11 +88,11 @@ pnpm check && pnpm typecheck && pnpm test
 
 - 字段废弃后**保留一个版本**：schema 仍接受它，渲染核仍消费它，但 `validateScenePackage()` 输出 warning 提示迁移。
 - 下一个 version 才允许删除。
-- 禁止无声删除：ISV 手上的旧场景包不能突然报错一堆 error。
+- 禁止无声删除：设计师手上的旧场景包不能突然报错一堆 error。
 
 ## 禁止事项
 
-- 不要只改 zod 不走六步——每一步都有人依赖（ISV 靠 JSON Schema 与 docs，渲染核靠默认值）。
+- 不要只改 zod 不走六步——每一步都有人依赖（设计师靠 JSON Schema 与 docs，渲染核靠默认值）。
 - 不要在 renderer-core 里容忍「旧字段别名」。同义字段不同名是旧工程 `webgpuMaterials` vs `webgpuMaterialOverrides` 的坑；别名需求走版本迁移说明。
 - 不要引入双单位。灯光强度只有 `energyWatts × intensityScale`（默认 1）一种表达；旧工程 `energy` + `webIntensity` 双轨是反面教材。
 - 不要 snake_case / camelCase 混用：schema 字段一律 camelCase。

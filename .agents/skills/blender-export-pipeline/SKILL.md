@@ -1,6 +1,6 @@
 ---
 name: blender-export-pipeline
-description: Blender 侧导出工作流。ISV 从 Blender 产出场景包（scene.glb + *.prism.json + export-report.json）时加载：导出器 UI/CLI 用法、坐标系与单位约定、Cycles→glTF 能力矩阵、常见坑（.001 重命名、材质改名、Principled v2 输入名）、导出后校验动作。
+description: Blender 侧导出工作流。设计师从 Blender 产出场景包（scene.glb + *.prism.json + export-report.json）时加载：导出器 UI/CLI 用法、坐标系与单位约定、Cycles→glTF 能力矩阵、常见坑（.001 重命名、材质改名、Principled v2 输入名）、导出后校验动作。
 user-invocable: true
 ---
 

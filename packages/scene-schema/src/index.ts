@@ -1,7 +1,7 @@
 /**
  * @prism/scene-schema —— prism-studio 的场景包契约包。
  *
- * 甲方前端与 ISV 之间的唯一数据契约：
+ * 甲方前端与乙方设计师之间的唯一数据契约：
  * - zod strict schema 定义 + TS 类型
  * - validateScenePackage：人读（中文）校验报告
  * - serializeScenePackage：2 空格缩进 + 浮点 5 位取整的规范落盘格式

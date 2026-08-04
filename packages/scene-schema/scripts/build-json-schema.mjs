@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 从 zod schema 生成 JSON Schema（draft 2020-12），供 ISV 用任意工具离线校验场景包。
+ * 从 zod schema 生成 JSON Schema（draft 2020-12），供设计师用任意工具离线校验场景包。
  *
  * 用法：pnpm --filter @prism/scene-schema build
  * 产物：packages/scene-schema/json-schema/prism-scene-v1.json（自动生成，请勿手改）
@@ -17,7 +17,7 @@ const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outputDir = join(packageRoot, 'json-schema');
 const outputPath = join(outputDir, 'prism-scene-v1.json');
 
-// io: 'input' —— ISV 校验的是"待提交的文件"，带默认值的字段（如 intensityScale）允许缺省；
+// io: 'input' ——设计师校验的是"待提交的文件"，带默认值的字段（如 intensityScale）允许缺省；
 // unrepresentable 保持默认 'throw'：任何无法表达为 JSON Schema 的定义都应让构建失败，而不是静默放行
 const jsonSchema = z.toJSONSchema(scenePackageSchema, { io: 'input' });
 

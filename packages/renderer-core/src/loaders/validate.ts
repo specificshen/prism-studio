@@ -4,7 +4,7 @@ import { ScenePackageValidationError } from '../core/errors.ts';
 /**
  * 契约校验薄封装：任何输入（unknown）→ ScenePackage。
  * ok=false 时抛出携带人读 issues 的 ScenePackageValidationError，
- * 编辑器 catch 后在校验面板逐条展示给 ISV。
+ * 编辑器 catch 后在校验面板逐条展示给设计师。
  */
 export function parseScenePackage(input: unknown): ScenePackage {
   const result = validateScenePackage(input);

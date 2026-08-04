@@ -1,25 +1,25 @@
 # prism-studio 协作协议
 
-本仓库是 **Blender → Three.js WebGPU 场景交付协作平台**：ISV 在 Blender 里建模并导出场景包，甲方前端维护契约/渲染核/编辑器。**数据契约是协作中心**——渲染效果只有两个合法来源：场景包数据（schema），或代码里显式声明的默认预设。
+本仓库是 **Blender → Three.js WebGPU 场景交付协作平台**：乙方设计师在 Blender 里建模并导出场景包，甲方前端维护契约/渲染核/编辑器。**数据契约是协作中心**——渲染效果只有两个合法来源：场景包数据（schema），或代码里显式声明的默认预设。
 
 ## 角色与协作
 
-本仓库由**甲方前端（owner）**与**外部供应商（isv，Blender 建模）**共同使用。AI 处理请求前应先识别当前用户角色，再决定优先激活哪些 skill 与约束：
+本仓库由**甲方前端（owner）**与**乙方设计师（designer，Blender 建模交付 + 编辑器调效果）**共同使用，**默认角色为 `designer`**（乙方设计师是主要使用者）。AI 处理请求前应先识别当前用户角色，再决定优先激活哪些 skill 与约束：
 
-- **读取 `.agents/user-role`** 文件（值：`owner` | `isv`）；文件不存在或为空时按默认 `owner` 处理。
-- 用户也可在 prompt 中直接声明角色（如「我是 ISV」），该声明**覆盖配置文件**。
+- **读取 `.agents/user-role`** 文件（值：`owner` | `designer`）；文件不存在或为空时按默认 `designer` 处理。
+- 用户也可在 prompt 中直接声明角色（如「我是甲方」），该声明**覆盖配置文件**。
 
 ### 角色默认 skill 优先级
 
 | 角色 | 优先参考 | 核心关注点 |
 |---|---|---|
-| `owner` | `prism-patterns` → `scene-schema-evolution` → `three-webgpu-renderer` | 契约、渲染核、编辑器架构 |
-| `isv` | `isv-vibe-coding` → `blender-export-pipeline` → `visual-regression` | Blender 导出、效果对标、数据调优 |
+| `owner` | `prism-patterns` → `scene-schema-evolution` → `three-webgpu-renderer` → `tsl-material-authoring` | 契约、渲染核、编辑器架构 |
+| `designer`（默认） | `designer-vibe-coding` → `designer-blender-vibe-coding` → `blender-export-pipeline` → `visual-regression` | 编辑器调效果、Blender 导出与交付、效果对标 |
 
 ### 协作边界
 
-- **ISV 只动 Blender 侧与数据**：用导出器产出场景包、在编辑器里调效果并导出 `.prism.json`。**不修改 `packages/`、`apps/` 下任何代码。**
-- **`packages/` 代码只有 owner 改**：契约 schema、渲染核、编辑器实现。
+- **设计师只动 Blender 侧、编辑器数据与 docs**：用导出器产出场景包、在编辑器里调效果并导出 `.prism.json`。**不修改 `packages/`、`apps/`、`tools/` 下任何代码。**
+- **`packages/` 与 `tools/` 代码只有 owner 改**：契约 schema、渲染核、编辑器实现、Blender 导出器与对比工具。
 - 效果调整一律走数据（Blender 重新导出 / 编辑器面板→导出），**禁止改代码调效果**。流程见 `docs/collaboration.md`。
 
 ## 项目命令
@@ -31,6 +31,7 @@
 - `pnpm check:ci` - Biome 只检查不修复（验收用）
 - `pnpm typecheck` - 全部包 TypeScript 类型检查
 - `pnpm test` - Vitest 单测
+- `pnpm verify` - **改完必跑的一键门禁**（check:ci + typecheck + test + build，与 CI 一致）
 - `pnpm sample` - 生成演示场景（tools/make-sample-scene.mjs，无需 Blender 冒烟）
 - `pnpm dlx shadcn@latest add <组件>` - 编辑器加 shadcn/ui 组件
 
@@ -41,7 +42,7 @@
 - Tailwind CSS v4 + shadcn/ui + @base-ui/react
 - Jotai + localforage
 - Biome + Vitest
-- three@0.184（WebGPU/TSL 节点材质）
+- three@0.185（WebGPU/TSL 节点材质）
 - zod 4（契约 + 构建期生成 JSON Schema）
 
 ## 术语词典（必须统一）
@@ -60,8 +61,10 @@
 - `scene-schema-evolution` - 契约演进六步流程与版本/废弃规则
 - `blender-export-pipeline` - Blender 导出工作流、坐标/单位约定、Cycles→glTF 能力矩阵与坑
 - `three-webgpu-renderer` - 渲染核架构、数据驱动铁律代码对比、性能红线
+- `tsl-material-authoring` - 自定义 TSL 材质（玻璃）开发六步流程、materials/tsl/ 扩展点与 r185 插槽速查
 - `visual-regression` - Cycles 对标四步流程与归因清单（工作产物不入库）
-- `isv-vibe-coding` - ISV 自然语言协作模板与禁区
+- `designer-blender-vibe-coding` - 乙方设计师 Blender 侧自然语言协作模板与禁区（导出与交付协作）
+- `designer-vibe-coding` - 设计师自然语言协作模板与禁区（只动编辑器数据，不碰代码）
 
 ## 最高层原则
 

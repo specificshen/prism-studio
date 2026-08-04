@@ -8,7 +8,7 @@ import { scenePackageSchema } from './package.ts';
 export interface ValidationIssue {
   /** 点分字段路径（数组下标为小数位，如 "lights.0.color"；根级问题为 "(root)"） */
   path: string;
-  /** 人读消息（中文，面向包括非前端 ISV 在内的所有协作者） */
+  /** 人读消息（中文，面向包括非前端设计师在内的所有协作者） */
   message: string;
   severity: 'error' | 'warning';
 }

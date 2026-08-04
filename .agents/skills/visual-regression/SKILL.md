@@ -1,6 +1,6 @@
 ---
 name: visual-regression
-description: 渲染效果对标排查流程。当 ISV 反馈「和 Blender 里不一样」时加载：Cycles 参考图 → 编辑器同机位截图 → compare.py 像素对比（PSNR/MAE/亮度分位数，阈值默认 28dB）→ 归因清单。工作产物一律不入库。
+description: 渲染效果对标排查流程。当设计师反馈「和 Blender 里不一样」时加载：Cycles 参考图 → 编辑器同机位截图 → compare.py 像素对比（PSNR/MAE/亮度分位数，阈值默认 28dB）→ 归因清单。工作产物一律不入库。
 user-invocable: true
 ---
 
@@ -10,7 +10,7 @@ user-invocable: true
 
 ## 什么时候用
 
-- ISV 说「和 Blender 里不一样」——不要空对空讨论，先跑本流程拿到量化差异。
+- 设计师说「和 Blender 里不一样」——不要空对空讨论，先跑本流程拿到量化差异。
 - 渲染核改了映射逻辑（convert / materials / pipeline）后做回归验证。
 
 ## 四步流程

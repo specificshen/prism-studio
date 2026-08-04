@@ -8,7 +8,7 @@ user-invocable: true
 
 本 Skill 是 prism-studio（Blender → Three.js WebGPU 场景交付协作平台）的工程约定唯一真相源，后续业务工程可直接复制这里的分层、命名与导出方式。
 
-契约演进流程见 `scene-schema-evolution`；渲染核架构与数据驱动铁律代码对比见 `three-webgpu-renderer`；Blender 侧导出工作流见 `blender-export-pipeline`；ISV 自然语言协作模板见 `isv-vibe-coding`。
+契约演进流程见 `scene-schema-evolution`；渲染核架构与数据驱动铁律代码对比见 `three-webgpu-renderer`；Blender 侧导出工作流见 `blender-export-pipeline`；乙方设计师 Blender 侧自然语言协作模板见 `designer-blender-vibe-coding`。
 
 ## 技术栈
 
@@ -17,7 +17,7 @@ user-invocable: true
 - Tailwind CSS v4 + shadcn/ui + @base-ui/react
 - Jotai（原子状态）+ localforage（本地持久化）
 - Biome（lint + format + import 排序）+ Vitest
-- three@0.184（WebGPU/TSL 节点材质）
+- three@0.185（WebGPU/TSL 节点材质）
 - zod 4（契约定义、校验、构建期生成 JSON Schema）
 
 ## monorepo 目录结构
@@ -41,13 +41,13 @@ prism-studio/
 | 包 | 职责 | 允许依赖 | 禁止依赖 |
 |---|---|---|---|
 | `@prism/scene-schema` | 契约：zod schema、validate、id/单位工具、JSON Schema 生成 | zod 4 | three、react |
-| `@prism/renderer-core` | 渲染：convert 坐标换算、loaders、lighting/environment/materials/pipeline、presets | three@0.184、`@prism/scene-schema` | react、localforage |
+| `@prism/renderer-core` | 渲染：convert 坐标换算、loaders、lighting/environment/materials/pipeline、presets | three@0.185、`@prism/scene-schema` | react、localforage |
 | `@prism/editor` | 编辑器：布局、面板、校验报告、导入导出、交互 | 上述两者 + React/Jotai/localforage | 绕过 renderer-core 直接堆 three 原语 |
 
 规则：
 
 - 依赖方向只有 `scene-schema ← renderer-core ← editor`，禁止反向、禁止环。
-- scene-schema 必须保持纯 TS + zod：ISV 的外部工具（Python 侧）也要消费它生成的 JSON Schema。
+- scene-schema 必须保持纯 TS + zod：设计师的外部工具（Python 侧）也要消费它生成的 JSON Schema。
 - renderer-core 不碰 React；编辑器通过 `PrismRenderer` 类实例（`mount` / `loadPackage` / 分区 `update*` / `dispose`）驱动它。
 
 ## 编辑器内数据流：atoms + services + domain hooks 三板斧

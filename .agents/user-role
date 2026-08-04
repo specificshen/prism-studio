@@ -1,9 +1,10 @@
 # AI 角色识别配置
-# 可选值：owner | isv
-# - owner: 甲方前端（默认）。优先加载 prism-patterns / scene-schema-evolution / three-webgpu-renderer，
+# 可选值：owner | designer
+# - designer: 乙方设计师（默认，本仓库的主要使用者）。负责 Blender 建模交付与编辑器调效果。
+#   优先加载 designer-vibe-coding / designer-blender-vibe-coding / blender-export-pipeline / visual-regression，
+#   只动 Blender 侧、场景包数据与 docs（导出器导出、编辑器内调效果、导出 .prism.json），
+#   不修改 packages/、apps/、tools/ 下任何代码。
+# - owner: 甲方前端。优先加载 prism-patterns / scene-schema-evolution / three-webgpu-renderer / tsl-material-authoring，
 #   负责 packages/ 与 apps/ 下全部代码：契约 schema、渲染核、编辑器。
-# - isv: 外部供应商（Blender 建模）。优先加载 isv-vibe-coding / blender-export-pipeline / visual-regression，
-#   只动 Blender 侧与场景包数据（导出器导出、编辑器内调效果、导出 .prism.json），
-#   不修改 packages/、apps/ 下任何代码。
-# 用户也可在 prompt 中直接声明角色（如「我是 ISV」），该声明覆盖本文件。
-owner
+# 用户也可在 prompt 中直接声明角色（如「我是甲方」），该声明覆盖本文件。
+designer

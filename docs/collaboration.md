@@ -1,11 +1,11 @@
-# 甲方 / ISV 协作流程
+# 甲方 / 乙方设计师协作流程
 
-本文定义交付物、验收流程、效果调整流程与问题反馈格式。AI 操作细则见 `.agents/skills/`（ISV 侧优先 `isv-vibe-coding`、`blender-export-pipeline`、`visual-regression`）。
+本文定义交付物、验收流程、效果调整流程与问题反馈格式。AI 操作细则见 `.agents/skills/`（乙方设计师侧优先 `designer-vibe-coding`、`designer-blender-vibe-coding`、`blender-export-pipeline`、`visual-regression`）。
 
 ## 角色
 
 - **甲方（owner）**：前端。维护 `@prism/scene-schema` 契约、`@prism/renderer-core` 渲染核、`@prism/editor` 编辑器。
-- **ISV**：Blender 建模供应商。产出场景包，在编辑器里看校验报告、调效果、导出数据。**不改前端代码。**
+- **乙方设计师（designer）**：Blender 建模交付 + 编辑器调效果，是本仓库的主要使用者与默认角色。产出场景包，在编辑器里看校验报告、调效果、导出数据。**不改前端代码。**
 
 ## 交付物定义
 
@@ -29,11 +29,11 @@
 
 效果调整**只有一条合法路径**：
 
-1. ISV 在编辑器里调：右侧 inspector 面板（环境/灯光/相机/后期/材质）+ 视口 TransformControls，实时预览。
+1. 设计师在编辑器里调：右侧 inspector 面板（环境/灯光/相机/后期/材质）+ 视口 TransformControls，实时预览。
 2. 调到满意 → 导出规范化 `.prism.json`（浮点取整、格式化）。
 3. 新 `.prism.json` 随场景包入库。
 
-**禁止改代码调效果。** 数据里表达不了的效果，反馈给甲方走 `scene-schema-evolution` 六步流程加字段——ISV 不自己动手改代码。
+**禁止改代码调效果。** 数据里表达不了的效果，反馈给甲方走 `scene-schema-evolution` 六步流程加字段——设计师不自己动手改代码。
 
 ## 问题反馈模板
 
@@ -53,4 +53,4 @@
 
 - 场景包数据：`format: "prism-scene"` + `version: 1`。
 - 向后兼容的加字段不动 `version`；breaking change 才 `version` +1，并在 `docs/schema-v1.md` 附迁移说明。
-- 废弃字段保留一个版本并给 warning，不会无声删除——ISV 手上的旧场景包不会突然报错。
+- 废弃字段保留一个版本并给 warning，不会无声删除——设计师手上的旧场景包不会突然报错。
